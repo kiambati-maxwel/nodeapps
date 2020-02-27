@@ -7,39 +7,41 @@ const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 
 // Connection URL
-const url = 'mongodb://localhost:27017';
+const url = 'mongodb://localhost:27017/myproject';
 
 // Database Name
 const dbName = 'myproject';
 
 // Use connect method to connect to the server
-MongoClient.connect('mongodb://127.0.0.1:27017/myproject', {
+MongoClient.connect(url, {
     useUnifiedTopology: true }, function(err, client) {
   assert.equal(null, err);
   console.log("Connected successfully to server");
 
   const db = client.db(dbName);
 
-  client.on('connection', function(socket){
 
-    const insertDocuments = function(db, callback) {
-        // Get the documents collection
-        const collection = db.collection('mean');
-        // Insert some documents
-        collection.insertMany([
-          {name: "max"}, {message: "hello"}
-        ], function(err, result) {
-          assert.equal(err, null);
-          assert.equal(2, result.result.n);
-          assert.equal(2, result.ops.length);
-          console.log("Inserted 2 documents into the collection");
-          callback(result);
-        });
-      }
-     
-      insertDocuments(db, function() {
-        client.close();
-      });
+  const insertDocuments = function(db, callback) {
+    // Get the documents collection
+    const collection = db.collection('chats');
+    // Insert some documents
+    collection.insertMany([
+      {name: "max"}, {message: "hello"}
+    ], function(err, result) {
+      assert.equal(err, null);
+      assert.equal(2, result.result.n);
+      assert.equal(2, result.ops.length);
+      console.log("Inserted 2 documents into the collection");
+      callback(result);
+    });
+  }
+ 
+  insertDocuments(db, function() {
+    client.close();
+  });
+
+  client.on('connection', function (socket){
+
 
     // create a function to send status
     sendStatus = s => {
@@ -103,7 +105,7 @@ MongoClient.connect('mongodb://127.0.0.1:27017/myproject', {
 });
 
 
-  client.close();
+  // client.close();
 });
 
 

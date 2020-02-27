@@ -28,8 +28,7 @@
                     <input type="text" id="username" class="form-control" placeholder="enter name ...">
                     <br>
                     <div class="card">
-                        <div id="message" class="card-block">
-
+                        <div id="messages" class="card-block">
                         </div>
                     </div>
                     <br>
@@ -72,15 +71,63 @@
 
             // connect to socket.io
             var socket = io.connect('http://127.0.0.1:4000');
-
+            
             // check for connections
             if(socket !== undefined){
                 console.log('connected to socket ...')
 
-                socket.on('output', function(data){
-                    console.log(data);
+                 socket.on('output', function(docs){
+                    console.log(docs);
+                    if(docs.length){
+                        for(var x = 0; x<docs.length; x++){
+                            var msg = document.createElement('div');
+                            msg.setAttribute('class', 'chat-message');
+                            msg.textContent = docs[x].name+": "+docs[x].message;
+                            messages.appendChild(msg);
+                            messages.insertBefore(msg, messages.firstChild);
+                        }
+
+                        // ---- get status from server
+
+                        socket.on('status', function(docs){
+                            // -----get message status
+                            setstatus((typeof docs ==='object')? docs.message : docs);
+
+                            // if satutus is clear clear text
+
+                            if(docs.clear){
+                                textarea.value = '';
+                            }
+
+                            
+                        })
+
+                        textarea.addEventListener('keydown', function(event){
+                            if(event.which === 13 && event.shiftKey === false){
+                                // emmit to server
+
+                                socket.emit('input', {
+                                    name: username.value,
+                                    message: textarea.value 
+                                })
+
+                                event.preventDefault();
+                            }
+                        })
+
+                        // --- clear chart
+                        clearBtn.addEventListener('click', function(){
+                            socket.emit('clear');
+                        })
+
+                        // ----- clear message
+                        socket.on('cleard', function(){
+                            messages.textContent ='';
+                        })
+                    }
                 })
             }
+
         })();
     </script>
 </body>
